@@ -76,4 +76,5 @@ test('project publishes its source under the MIT license', async () => {
   assert.match(license, /^MIT License/m);
   assert.match(license, /Copyright \(c\) 2026 langrenlibai/);
   assert.equal(packageMetadata.license, 'MIT');
+  assert.equal(packageMetadata.author.email, '309770634+langrenlibai@users.noreply.github.com');
 });
