@@ -10,6 +10,7 @@ const { GitClient } = require('../src/main/git-client');
 
 const gitProbe = spawnSync('git', ['--version'], { encoding: 'utf8', shell: false });
 const gitAvailable = gitProbe.status === 0;
+const isWindows = process.platform === 'win32';
 
 function systemGit(repository, args) {
   const result = spawnSync('git', ['-C', repository, ...args], {
@@ -50,7 +51,7 @@ test('GitClient covers status, unusual paths, diffs, stage, unstage, commit, bra
     'space name.txt',
     '--leading.txt',
     'quote"name.txt',
-    'left -> right.txt',
+    'left - right.txt',
     '你好.txt'
   ];
   await Promise.all(unusualPaths.map((name, index) => (
@@ -72,7 +73,7 @@ test('GitClient covers status, unusual paths, diffs, stage, unstage, commit, bra
   const limitedDiff = await new GitClient({ diffLimit: 80 }).diff(repository, 'tracked.txt', false);
   assert.equal(limitedDiff.truncated, true);
   assert.ok(Buffer.byteLength(limitedDiff.text, 'utf8') <= 80);
-  const untrackedDiff = await client.diff(repository, 'left -> right.txt', false);
+  const untrackedDiff = await client.diff(repository, 'left - right.txt', false);
   assert.match(untrackedDiff.text, /\+new file 3/);
 
   await client.stage(repository, [...unusualPaths, 'tracked.txt']);
@@ -133,7 +134,9 @@ test('GitClient unstages files in an unborn repository without deleting working 
 });
 
 test('GitClient treats pathspec magic-looking filenames as literal paths', {
-  skip: gitAvailable ? false : 'system Git is unavailable'
+  skip: !gitAvailable
+    ? 'system Git is unavailable'
+    : (isWindows ? 'Windows filesystems reject colon and asterisk filename characters' : false)
 }, async (context) => {
   const repository = await fs.mkdtemp(path.join(os.tmpdir(), 'nodebraid-literal-pathspec-'));
   context.after(() => fs.rm(repository, { recursive: true, force: true }));
@@ -172,7 +175,9 @@ test('GitClient treats pathspec magic-looking filenames as literal paths', {
 });
 
 test('GitClient discovers a repository whose directory name ends with a space', {
-  skip: gitAvailable ? false : 'system Git is unavailable'
+  skip: !gitAvailable
+    ? 'system Git is unavailable'
+    : (isWindows ? 'Windows strips trailing spaces from directory names' : false)
 }, async (context) => {
   const parent = await fs.mkdtemp(path.join(os.tmpdir(), 'nodebraid-trailing-space-'));
   context.after(() => fs.rm(parent, { recursive: true, force: true }));
