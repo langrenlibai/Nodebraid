@@ -114,9 +114,9 @@ Nodebraid 的原则是：重要操作由你主动点击，软件不在背后替�
 
 这是一个从零独立实现的早期 MVP，适合试用、学习和继续开发。功能建议、缺陷报告和代码贡献方式见 [CONTRIBUTING.md](CONTRIBUTING.md)，安全问题报告方式见 [SECURITY.md](SECURITY.md)。
 
-## 授权状态
+## 开源许可证
 
-本仓库暂时没有添加公开源码许可证，也默认不应公开发布。仓库所有者需要先明确选择许可证和可见性，再决定是否开放源码。
+Nodebraid 采用 [MIT 许可证](LICENSE) 开源。你可以使用、修改和分发本项目，但需要保留原有的版权声明和许可证文本。
 
 第三方组件仍遵守各自的许可证，详见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
 

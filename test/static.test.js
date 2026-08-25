@@ -70,7 +70,10 @@ test('history and branch UI requests are bound to a repository generation', asyn
   assert.match(renderer, /repositoryPath:\s*requestToken\.repositoryIdentity/);
 });
 
-test('project intentionally contains no public-source license file', async () => {
-  const entries = await fs.readdir(projectRoot);
-  assert.equal(entries.some((entry) => /^licen[cs]e(?:\.|$)/i.test(entry)), false);
+test('project publishes its source under the MIT license', async () => {
+  const license = await source('LICENSE');
+  const packageMetadata = JSON.parse(await source('package.json'));
+  assert.match(license, /^MIT License/m);
+  assert.match(license, /Copyright \(c\) 2026 langrenlibai/);
+  assert.equal(packageMetadata.license, 'MIT');
 });

@@ -2,7 +2,7 @@
 
 Thank you for helping make everyday version-control work easier to understand and safer to perform.
 
-This repository has no public-source license yet and is private by default. Participation is by invitation until the owner chooses contribution and licensing terms. Do not submit code, text, or artwork unless you created it or have clear permission to contribute it.
+Nodebraid is open source under the [MIT License](LICENSE). Contributions are welcome. By submitting code, text, or artwork, you confirm that you created it or have clear permission to contribute it under the project's MIT License.
 
 ## Clean-room rule
 

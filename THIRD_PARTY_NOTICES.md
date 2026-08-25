@@ -17,6 +17,6 @@ The exact resolved dependency graph is recorded in `package-lock.json`. License 
 
 Nodebraid invokes a Git executable already installed and configured by the user. Git is not bundled with Nodebraid. Git is distributed by its own maintainers under the GNU General Public License, version 2; see <https://git-scm.com/about/free-and-open-source> and the license materials included with the user's Git installation.
 
-## Nodebraid license status
+## Nodebraid license
 
-No public-source license has been selected for Nodebraid itself. Nothing in this file grants rights to Nodebraid code or artwork. The repository owner must make an explicit licensing decision before public distribution.
+Nodebraid itself is distributed under the MIT License. See [LICENSE](LICENSE) for the full text. Third-party components remain subject to the separate terms listed above and in their distributed license materials.
