@@ -7,6 +7,7 @@
   "author": "Nodebraid contributors",
   "type": "commonjs",
   "scripts": {
+    "postinstall": "node node_modules/electron/install.js",
     "start": "electron .",
     "test": "node --test",
     "test:unit": "node --test test/unit-*.test.js test/static.test.js",
@@ -34,7 +35,6 @@
   "build": {
     "appId": "dev.nodebraid.desktop",
     "productName": "Nodebraid",
-    "electronDist": "node_modules/electron/dist",
     "asar": true,
     "directories": {
       "output": "dist"
