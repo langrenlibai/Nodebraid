@@ -3,8 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "description": "A calm desktop client for everyday Git work.",
+  "desktopName": "Nodebraid",
   "main": "src/main/index.js",
-  "author": "Nodebraid contributors",
+  "author": {
+    "name": "Nodebraid contributors",
+    "email": "309770634+langrenlibai@users.noreply.github.com"
+  },
   "type": "commonjs",
   "scripts": {
     "postinstall": "node node_modules/electron/install.js",
@@ -62,6 +66,7 @@
     "linux": {
       "icon": "assets/icon.png",
       "category": "Development",
+      "syncDesktopName": true,
       "target": [
         "AppImage",
         "deb"
