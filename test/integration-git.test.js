@@ -50,7 +50,7 @@ test('GitClient covers status, unusual paths, diffs, stage, unstage, commit, bra
   const unusualPaths = [
     'space name.txt',
     '--leading.txt',
-    'quote"name.txt',
+    "quote'name.txt",
     'left - right.txt',
     '你好.txt'
   ];
@@ -84,11 +84,11 @@ test('GitClient covers status, unusual paths, diffs, stage, unstage, commit, bra
   const stagedDiff = await client.diff(repository, 'space name.txt', true);
   assert.match(stagedDiff.text, /\+new file 0/);
 
-  await client.unstage(repository, ['--leading.txt', 'quote"name.txt']);
+  await client.unstage(repository, ['--leading.txt', "quote'name.txt"]);
   status = await client.status(repository);
   assert.equal(status.unstaged.some((file) => file.path === '--leading.txt'), true);
-  assert.equal(status.unstaged.some((file) => file.path === 'quote"name.txt'), true);
-  await client.stage(repository, ['--leading.txt', 'quote"name.txt']);
+  assert.equal(status.unstaged.some((file) => file.path === "quote'name.txt"), true);
+  await client.stage(repository, ['--leading.txt', "quote'name.txt"]);
 
   await client.commit(repository, 'Record unusual filenames');
   status = await client.status(repository);
