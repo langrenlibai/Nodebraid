@@ -1,0 +1,83 @@
+name: Build tagged artifacts
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tagged-build-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Package (${{ matrix.artifact }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact: linux
+          - os: macos-latest
+            artifact: macos
+          - os: windows-latest
+            artifact: windows
+
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: "false"
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build distributables without publishing
+        run: npm run dist -- --publish never
+
+      - name: Stage distributables and create checksums
+        shell: node {0}
+        run: |
+          const { copyFileSync, mkdirSync, readdirSync, readFileSync, writeFileSync } = require("node:fs");
+          const { createHash } = require("node:crypto");
+          const { join } = require("node:path");
+
+          const sourceDirectory = "dist";
+          const artifactDirectory = "release-artifacts";
+          const files = readdirSync(sourceDirectory, { withFileTypes: true })
+            .filter((entry) => entry.isFile())
+            .map((entry) => entry.name)
+            .sort((left, right) => left.localeCompare(right, "en"));
+
+          if (files.length === 0) {
+            throw new Error("The package command produced no top-level distributable files.");
+          }
+
+          mkdirSync(artifactDirectory, { recursive: true });
+          const checksums = files.map((name) => {
+            const source = join(sourceDirectory, name);
+            copyFileSync(source, join(artifactDirectory, name));
+            const digest = createHash("sha256").update(readFileSync(source)).digest("hex");
+            return `${digest}  ${name}`;
+          });
+          writeFileSync(join(artifactDirectory, "SHA256SUMS.txt"), `${checksums.join("\n")}\n`, "utf8");
+
+      - name: Upload platform artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nodebraid-${{ github.ref_name }}-${{ matrix.artifact }}
+          path: release-artifacts/
+          if-no-files-found: error
+          retention-days: 14

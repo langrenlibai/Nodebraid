@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title description">
+  <title id="title">Nodebraid icon</title>
+  <desc id="description">Three rounded paths weave into a compact letter N with node-shaped endpoints.</desc>
+  <rect x="24" y="24" width="464" height="464" rx="112" fill="#0B1220"/>
+  <rect x="34" y="34" width="444" height="444" rx="102" fill="none" stroke="#F8FAFC" stroke-opacity="0.08" stroke-width="4"/>
+
+  <!-- Left strand. -->
+  <path d="M132 390 C132 300 132 210 132 122"
+        fill="none" stroke="#2DD4BF" stroke-width="44"
+        stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- A navy separator makes the diagonal pass over the left strand. -->
+  <path d="M132 122 C210 162 300 350 380 390"
+        fill="none" stroke="#0B1220" stroke-width="64"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M132 122 C210 162 300 350 380 390"
+        fill="none" stroke="#8B5CF6" stroke-width="44"
+        stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- The right strand crosses back over the diagonal. -->
+  <path d="M380 390 C380 300 380 210 380 122"
+        fill="none" stroke="#0B1220" stroke-width="64"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M380 390 C380 300 380 210 380 122"
+        fill="none" stroke="#F8FAFC" stroke-width="44"
+        stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Endpoint nodes. Shared endpoints use inset dots to show the hand-off. -->
+  <circle cx="132" cy="390" r="12" fill="#2DD4BF" stroke="#0B1220" stroke-width="6"/>
+  <circle cx="132" cy="122" r="12" fill="#8B5CF6" stroke="#0B1220" stroke-width="6"/>
+  <circle cx="380" cy="390" r="12" fill="#F8FAFC" stroke="#8B5CF6" stroke-width="6"/>
+  <circle cx="380" cy="122" r="12" fill="#F8FAFC" stroke="#0B1220" stroke-width="6"/>
+</svg>

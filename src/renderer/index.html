@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nodebraid</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="./request-guard.js" defer></script>
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="app-header">
+        <div class="brand-block" aria-label="Nodebraid">
+          <svg
+            class="brand-mark"
+            viewBox="0 0 48 48"
+            role="img"
+            aria-labelledby="brand-mark-title"
+          >
+            <title id="brand-mark-title">Nodebraid</title>
+            <path class="brand-path brand-path-teal" d="M9 36V12c8 0 13 24 30 24V12" />
+            <path class="brand-path brand-path-violet" d="M9 12c10 0 13 24 30 24" />
+            <path class="brand-path brand-path-light" d="M9 36c10 0 13-24 30-24" />
+            <circle class="brand-node brand-node-teal" cx="9" cy="12" r="3" />
+            <circle class="brand-node brand-node-violet" cx="9" cy="36" r="3" />
+            <circle class="brand-node brand-node-light" cx="39" cy="12" r="3" />
+            <circle class="brand-node brand-node-teal" cx="39" cy="36" r="3" />
+          </svg>
+          <div>
+            <div class="brand-name">Nodebraid</div>
+            <div class="brand-tagline" data-i18n="tagline">Every change, clearly connected.</div>
+          </div>
+        </div>
+
+        <div class="repository-identity" aria-live="polite">
+          <span class="eyebrow" data-i18n="repository">Repository</span>
+          <div class="repository-name-row">
+            <strong id="repository-name" data-i18n="noRepository">No repository open</strong>
+            <span id="branch-chip" class="branch-chip is-hidden"></span>
+          </div>
+          <span id="repository-path" class="repository-path"></span>
+        </div>
+
+        <div class="header-actions">
+          <button id="open-repository" class="button button-primary" type="button">
+            <svg aria-hidden="true" viewBox="0 0 20 20">
+              <path d="M2.8 5.6h5l1.4 1.7h8v7.8a1.5 1.5 0 0 1-1.5 1.5H4.3a1.5 1.5 0 0 1-1.5-1.5V5.6Z" />
+              <path d="M2.8 7.3V4.9a1.5 1.5 0 0 1 1.5-1.5h3.4l1.5 1.8h3.1" />
+            </svg>
+            <span data-i18n="openRepository">Open repository</span>
+          </button>
+
+          <label class="select-control recent-control">
+            <span class="sr-only" data-i18n="recentRepositories">Recent repositories</span>
+            <select id="recent-repositories" aria-label="Recent repositories">
+              <option value="" data-i18n="recentRepositories">Recent repositories</option>
+            </select>
+          </label>
+
+          <button
+            id="refresh-repository"
+            class="icon-button"
+            type="button"
+            data-tooltip-key="refresh"
+            aria-label="Refresh"
+          >
+            <svg aria-hidden="true" viewBox="0 0 20 20">
+              <path d="M16.5 7.4A6.8 6.8 0 1 0 16 13.7" />
+              <path d="M16.5 3.8v3.8h-3.8" />
+            </svg>
+          </button>
+
+          <button
+            id="open-settings"
+            class="icon-button"
+            type="button"
+            data-tooltip-key="settings"
+            aria-label="Settings"
+          >
+            <svg aria-hidden="true" viewBox="0 0 20 20">
+              <circle cx="10" cy="10" r="2.7" />
+              <path d="M16.2 11.3v-2.6l-2-.5-.5-1.1 1.1-1.8L13 3.5l-1.8 1.1-1.2-.5-.5-2.1H7l-.5 2.1-1.2.5-1.8-1.1-1.8 1.8 1.1 1.8-.5 1.1-2 .5v2.6l2 .5.5 1.1-1.1 1.8 1.8 1.8 1.8-1.1 1.2.5.5 2.1h2.5l.5-2.1 1.2-.5 1.8 1.1 1.8-1.8-1.1-1.8.5-1.1 2-.5Z" />
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <div id="git-warning" class="git-warning is-hidden" role="alert">
+        <div class="git-warning-icon" aria-hidden="true">!</div>
+        <div>
+          <strong data-i18n="gitUnavailableTitle">Git is not available</strong>
+          <p id="git-warning-message" data-i18n="gitUnavailableBody">
+            Install Git or set its executable path in Settings, then try again.
+          </p>
+        </div>
+        <button id="git-warning-settings" class="button button-quiet" type="button" data-i18n="openSettings">
+          Open settings
+        </button>
+      </div>
+
+      <div class="command-bar">
+        <nav class="primary-tabs" role="tablist" aria-label="Primary views">
+          <button
+            id="tab-changes"
+            class="tab-button is-active"
+            type="button"
+            role="tab"
+            aria-selected="true"
+            aria-controls="view-changes"
+            data-view="changes"
+          >
+            <svg aria-hidden="true" viewBox="0 0 20 20">
+              <path d="M5 3.2v13.6M15 3.2v13.6M3 6h4M13 14h4" />
+              <circle cx="5" cy="11.6" r="2" />
+              <circle cx="15" cy="8.4" r="2" />
+            </svg>
+            <span data-i18n="changes">Changes</span>
+            <span id="changes-count" class="tab-count">0</span>
+          </button>
+          <button
+            id="tab-history"
+            class="tab-button"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="view-history"
+            data-view="history"
+            tabindex="-1"
+          >
+            <svg aria-hidden="true" viewBox="0 0 20 20">
+              <circle cx="10" cy="10" r="7" />
+              <path d="M10 6v4.4l3 1.8" />
+            </svg>
+            <span data-i18n="history">History</span>
+          </button>
+          <button
+            id="tab-branches"
+            class="tab-button"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="view-branches"
+            data-view="branches"
+            tabindex="-1"
+          >
+            <svg aria-hidden="true" viewBox="0 0 20 20">
+              <circle cx="5" cy="4" r="2" />
+              <circle cx="5" cy="16" r="2" />
+              <circle cx="15" cy="6.5" r="2" />
+              <path d="M5 6v8M7 13.5c5.4 0 8-1.7 8-5" />
+            </svg>
+            <span data-i18n="branches">Branches</span>
+          </button>
+        </nav>
+
+        <div class="sync-actions" aria-label="Synchronization actions">
+          <div id="sync-summary" class="sync-summary" aria-live="polite">
+            <span class="sync-dot"></span>
+            <span data-i18n="noUpstream">No upstream</span>
+          </div>
+          <button id="fetch-action" class="button button-secondary" type="button">
+            <svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 3v10M6.5 9.5 10 13l3.5-3.5M4 16h12" /></svg>
+            <span data-i18n="fetch">Fetch</span>
+          </button>
+          <button id="pull-action" class="button button-secondary" type="button">
+            <svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 3v11M5.8 9.8 10 14l4.2-4.2" /></svg>
+            <span data-i18n="pull">Pull</span>
+          </button>
+          <button id="push-action" class="button button-secondary" type="button">
+            <svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 17V6M5.8 10.2 10 6l4.2 4.2" /></svg>
+            <span data-i18n="push">Push</span>
+          </button>
+        </div>
+      </div>
+
+      <main class="main-content">
+        <section
+          id="view-changes"
+          class="view-panel changes-layout"
+          role="tabpanel"
+          aria-labelledby="tab-changes"
+          data-view-panel="changes"
+        >
+          <aside class="changes-sidebar">
+            <section class="file-group" aria-labelledby="unstaged-title">
+              <header class="file-group-header">
+                <div>
+                  <div class="section-title-row">
+                    <h2 id="unstaged-title" data-i18n="unstaged">Unstaged</h2>
+                    <span id="unstaged-count" class="count-badge">0</span>
+                  </div>
+                  <p data-i18n="unstagedHint">Changes outside the next commit</p>
+                </div>
+                <div class="file-group-actions">
+                  <button
+                    id="select-all-unstaged"
+                    class="text-button"
+                    type="button"
+                    data-i18n="selectAll"
+                  >
+                    Select all
+                  </button>
+                  <button id="stage-selected" class="button button-compact button-accent" type="button">
+                    <span data-i18n="stageSelected">Stage selected</span>
+                  </button>
+                </div>
+              </header>
+              <ul id="unstaged-files" class="file-list" aria-label="Unstaged files"></ul>
+              <div id="unstaged-empty" class="file-list-empty">
+                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6 12.5 4 4L18 8" /></svg>
+                <span data-i18n="noUnstaged">No unstaged changes</span>
+              </div>
+            </section>
+
+            <section class="file-group" aria-labelledby="staged-title">
+              <header class="file-group-header">
+                <div>
+                  <div class="section-title-row">
+                    <h2 id="staged-title" data-i18n="staged">Staged</h2>
+                    <span id="staged-count" class="count-badge count-badge-violet">0</span>
+                  </div>
+                  <p data-i18n="stagedHint">Changes included in the next commit</p>
+                </div>
+                <div class="file-group-actions">
+                  <button id="select-all-staged" class="text-button" type="button" data-i18n="selectAll">
+                    Select all
+                  </button>
+                  <button id="unstage-selected" class="button button-compact button-violet" type="button">
+                    <span data-i18n="unstageSelected">Unstage selected</span>
+                  </button>
+                </div>
+              </header>
+              <ul id="staged-files" class="file-list" aria-label="Staged files"></ul>
+              <div id="staged-empty" class="file-list-empty">
+                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M8 12h8M12 8v8" /></svg>
+                <span data-i18n="noStaged">Stage files to prepare a commit</span>
+              </div>
+            </section>
+
+            <section class="commit-card" aria-labelledby="commit-title">
+              <div class="commit-card-heading">
+                <div>
+                  <span class="eyebrow" data-i18n="nextCheckpoint">Next checkpoint</span>
+                  <h2 id="commit-title" data-i18n="commitChanges">Commit changes</h2>
+                </div>
+                <span id="commit-staged-count" class="commit-count">0</span>
+              </div>
+              <label class="field-label" for="commit-message" data-i18n="commitMessage">Commit message</label>
+              <textarea
+                id="commit-message"
+                rows="3"
+                maxlength="10000"
+                data-i18n-placeholder="commitPlaceholder"
+                placeholder="Describe this checkpoint"
+              ></textarea>
+              <div class="commit-footer">
+                <p data-i18n="commitLocalHint">A commit stays local until you push it.</p>
+                <button id="commit-action" class="button button-primary" type="button">
+                  <svg aria-hidden="true" viewBox="0 0 20 20"><path d="m5 10.2 3.1 3.1L15 6.7" /></svg>
+                  <span data-i18n="commit">Commit</span>
+                </button>
+              </div>
+            </section>
+          </aside>
+
+          <section class="diff-panel" aria-labelledby="diff-heading">
+            <header class="diff-header">
+              <div class="diff-title-block">
+                <span id="diff-context" class="eyebrow" data-i18n="diffPreview">Diff preview</span>
+                <h2 id="diff-heading" data-i18n="chooseFile">Choose a file</h2>
+                <span id="diff-original-path" class="diff-original-path is-hidden"></span>
+              </div>
+              <div id="diff-file-status" class="file-status-pill is-hidden"></div>
+            </header>
+            <div id="diff-content" class="diff-content" tabindex="0">
+              <div id="diff-empty" class="diff-empty-state">
+                <div class="diff-empty-art" aria-hidden="true">
+                  <span></span><span></span><span></span><span></span><span></span>
+                </div>
+                <h3 data-i18n="chooseFile">Choose a file</h3>
+                <p data-i18n="chooseFileHint">Select a filename to inspect exactly what changed.</p>
+              </div>
+              <div id="diff-loading" class="diff-loading is-hidden">
+                <span class="spinner"></span>
+                <span data-i18n="loadingDiff">Loading diff…</span>
+              </div>
+              <div id="diff-truncated" class="diff-notice is-hidden" role="note">
+                <span aria-hidden="true">!</span>
+                <span data-i18n="diffTruncated">This preview was shortened to keep Nodebraid responsive.</span>
+              </div>
+              <div id="diff-lines" class="diff-lines is-hidden" aria-label="File diff"></div>
+            </div>
+          </section>
+        </section>
+
+        <section
+          id="view-history"
+          class="view-panel is-hidden"
+          role="tabpanel"
+          aria-labelledby="tab-history"
+          data-view-panel="history"
+        >
+          <div class="page-card history-card">
+            <header class="page-header">
+              <div>
+                <span class="eyebrow" data-i18n="repositoryTimeline">Repository timeline</span>
+                <h1 data-i18n="recentHistory">Recent history</h1>
+                <p data-i18n="historyHint">The newest 200 commits, shown in local time.</p>
+              </div>
+              <label class="search-field">
+                <svg aria-hidden="true" viewBox="0 0 20 20"><circle cx="8.7" cy="8.7" r="5.2" /><path d="m12.6 12.6 4 4" /></svg>
+                <span class="sr-only" data-i18n="filterHistory">Filter history</span>
+                <input
+                  id="history-filter"
+                  type="search"
+                  autocomplete="off"
+                  data-i18n-placeholder="filterHistory"
+                  placeholder="Filter history"
+                />
+              </label>
+            </header>
+
+            <div id="history-loading" class="page-loading is-hidden">
+              <span class="spinner"></span>
+              <span data-i18n="loadingHistory">Loading history…</span>
+            </div>
+
+            <div id="history-empty" class="large-empty-state is-hidden">
+              <div class="empty-orbit" aria-hidden="true"><span></span></div>
+              <h2 data-i18n="noHistory">No commits yet</h2>
+              <p data-i18n="noHistoryHint">Your first commit will begin this timeline.</p>
+            </div>
+
+            <div id="history-table-wrap" class="history-table-wrap is-hidden">
+              <table class="history-table">
+                <thead>
+                  <tr>
+                    <th scope="col" data-i18n="commitHash">Commit</th>
+                    <th scope="col" data-i18n="summary">Summary</th>
+                    <th scope="col" data-i18n="author">Author</th>
+                    <th scope="col" data-i18n="date">Date</th>
+                  </tr>
+                </thead>
+                <tbody id="history-rows"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section
+          id="view-branches"
+          class="view-panel is-hidden"
+          role="tabpanel"
+          aria-labelledby="tab-branches"
+          data-view-panel="branches"
+        >
+          <div class="page-card branches-card">
+            <header class="page-header">
+              <div>
+                <span class="eyebrow" data-i18n="localBranches">Local branches</span>
+                <h1 data-i18n="branches">Branches</h1>
+                <p data-i18n="branchesHint">Move between local lines of work without rewriting history.</p>
+              </div>
+              <div id="current-branch-summary" class="current-branch-summary is-hidden">
+                <span class="branch-pulse"></span>
+                <div>
+                  <span data-i18n="currentlyOn">Currently on</span>
+                  <strong id="current-branch-name"></strong>
+                </div>
+              </div>
+            </header>
+
+            <div id="branches-loading" class="page-loading is-hidden">
+              <span class="spinner"></span>
+              <span data-i18n="loadingBranches">Loading branches…</span>
+            </div>
+
+            <div id="branches-empty" class="large-empty-state is-hidden">
+              <div class="empty-branch-art" aria-hidden="true"><span></span><span></span><span></span></div>
+              <h2 data-i18n="noBranches">No local branches found</h2>
+              <p data-i18n="noBranchesHint">Refresh after creating a branch with Git.</p>
+            </div>
+
+            <ul id="branch-list" class="branch-list"></ul>
+          </div>
+        </section>
+
+        <section id="no-repository" class="welcome-panel is-hidden" aria-live="polite">
+          <div class="welcome-graphic" aria-hidden="true">
+            <svg viewBox="0 0 320 220">
+              <path class="welcome-path welcome-path-a" d="M42 175C68 47 147 54 276 51" />
+              <path class="welcome-path welcome-path-b" d="M42 45c54 0 57 130 234 130" />
+              <path class="welcome-path welcome-path-c" d="M42 110c74 0 87 1 234 0" />
+              <circle class="welcome-node node-a" cx="42" cy="45" r="8" />
+              <circle class="welcome-node node-b" cx="42" cy="110" r="8" />
+              <circle class="welcome-node node-c" cx="42" cy="175" r="8" />
+              <circle class="welcome-node node-c" cx="276" cy="51" r="8" />
+              <circle class="welcome-node node-a" cx="276" cy="110" r="8" />
+              <circle class="welcome-node node-b" cx="276" cy="175" r="8" />
+            </svg>
+          </div>
+          <span class="eyebrow" data-i18n="startHere">Start here</span>
+          <h1 data-i18n="welcomeTitle">See how every change connects</h1>
+          <p data-i18n="welcomeBody">
+            Open an existing Git repository to review changes, prepare a commit, and stay in sync.
+          </p>
+          <button id="welcome-open-repository" class="button button-primary button-large" type="button">
+            <svg aria-hidden="true" viewBox="0 0 20 20">
+              <path d="M2.8 5.6h5l1.4 1.7h8v7.8a1.5 1.5 0 0 1-1.5 1.5H4.3a1.5 1.5 0 0 1-1.5-1.5V5.6Z" />
+              <path d="M2.8 7.3V4.9a1.5 1.5 0 0 1 1.5-1.5h3.4l1.5 1.8h3.1" />
+            </svg>
+            <span data-i18n="openRepository">Open repository</span>
+          </button>
+          <p class="welcome-footnote" data-i18n="gitRequired">Git must already be installed on this computer.</p>
+        </section>
+      </main>
+
+      <footer class="status-bar" aria-live="polite" aria-atomic="true">
+        <div id="operation-status" class="operation-status">
+          <span id="operation-indicator" class="status-indicator status-idle"></span>
+          <div>
+            <span class="status-label" data-i18n="status">Status</span>
+            <strong id="operation-message" data-i18n="ready">Ready</strong>
+          </div>
+        </div>
+        <div id="last-result" class="last-result">
+          <span data-i18n="lastResult">Last result</span>
+          <strong id="last-result-message" data-i18n="nothingYet">Nothing yet</strong>
+        </div>
+        <div class="privacy-note">
+          <svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 2.6 16 5v4.3c0 3.8-2.5 6.7-6 8.1-3.5-1.4-6-4.3-6-8.1V5l6-2.4Z" /><path d="m7.4 10 1.6 1.6 3.6-3.7" /></svg>
+          <span data-i18n="privacyNote">No telemetry · credentials stay with system Git</span>
+        </div>
+      </footer>
+    </div>
+
+    <dialog id="settings-dialog" class="modal settings-dialog" aria-labelledby="settings-title">
+      <form id="settings-form" method="dialog">
+        <header class="modal-header">
+          <div>
+            <span class="eyebrow" data-i18n="preferences">Preferences</span>
+            <h2 id="settings-title" data-i18n="settings">Settings</h2>
+          </div>
+          <button id="close-settings" class="icon-button" type="button" aria-label="Close">
+            <svg aria-hidden="true" viewBox="0 0 20 20"><path d="m5 5 10 10M15 5 5 15" /></svg>
+          </button>
+        </header>
+        <div class="modal-body">
+          <label class="settings-field" for="language-setting">
+            <span class="field-label" data-i18n="language">Language</span>
+            <select id="language-setting">
+              <option value="en">English</option>
+              <option value="zh-CN">简体中文</option>
+            </select>
+          </label>
+
+          <div class="settings-field">
+            <label class="field-label" for="git-path-setting" data-i18n="gitExecutable">Git executable</label>
+            <div class="git-picker-row">
+              <input id="git-path-setting" type="text" readonly />
+              <button id="choose-git-executable" class="button button-secondary" type="button" data-i18n="chooseGitExecutable">
+                Choose Git…
+              </button>
+              <button id="use-system-git" class="button button-quiet" type="button" data-i18n="useSystemGit">
+                Use system Git
+              </button>
+            </div>
+            <span class="field-help" data-i18n="gitPathHint">
+              Choose through the system file picker, or use Git from your system PATH.
+            </span>
+          </div>
+
+          <div class="security-callout">
+            <svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 2.6 16 5v4.3c0 3.8-2.5 6.7-6 8.1-3.5-1.4-6-4.3-6-8.1V5l6-2.4Z" /><path d="m7.4 10 1.6 1.6 3.6-3.7" /></svg>
+            <p data-i18n="credentialsHint">
+              Nodebraid does not store hosting passwords or tokens. Authentication stays with system Git, your credential helper, or SSH.
+            </p>
+          </div>
+        </div>
+        <footer class="modal-footer">
+          <button id="cancel-settings" class="button button-quiet" type="button" data-i18n="cancel">Cancel</button>
+          <button id="save-settings" class="button button-primary" type="submit" data-i18n="saveSettings">
+            Save settings
+          </button>
+        </footer>
+      </form>
+    </dialog>
+
+    <dialog id="confirm-dialog" class="modal confirm-dialog" aria-labelledby="confirm-title">
+      <form method="dialog">
+        <div class="confirm-icon" aria-hidden="true">!</div>
+        <h2 id="confirm-title">Continue?</h2>
+        <p id="confirm-message"></p>
+        <div class="modal-footer">
+          <button id="confirm-cancel" class="button button-quiet" type="button">Cancel</button>
+          <button id="confirm-accept" class="button button-warning" type="button">Continue</button>
+        </div>
+      </form>
+    </dialog>
+  </body>
+</html>
